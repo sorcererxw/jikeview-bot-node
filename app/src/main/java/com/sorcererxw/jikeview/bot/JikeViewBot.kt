@@ -10,7 +10,6 @@ import org.springframework.stereotype.Component
 import org.telegram.telegrambots.bots.DefaultBotOptions
 import org.telegram.telegrambots.bots.TelegramLongPollingBot
 import org.telegram.telegrambots.meta.ApiContext
-import org.telegram.telegrambots.meta.api.methods.PartialBotApiMethod
 import org.telegram.telegrambots.meta.api.methods.send.SendMediaGroup
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage
 import org.telegram.telegrambots.meta.api.methods.send.SendVideo
@@ -48,6 +47,10 @@ class JikeViewBot : TelegramLongPollingBot(DEFAULT_OPTION) {
                 execute(SendMessage().setChatId(message.chatId)
                         .enableMarkdown(true)
                         .setText(Dialogues.SAY_HELLO()))
+            }else if(message.text == Commands.REPORT){
+                execute(SendMessage().setChatId(message.chatId)
+                        .enableMarkdown(true)
+                        .setText(Dialogues.GOTO_ISSUE_PAGE()))
             }
         } else {
             val urls = StringUtil.extractUrls(message.text)
