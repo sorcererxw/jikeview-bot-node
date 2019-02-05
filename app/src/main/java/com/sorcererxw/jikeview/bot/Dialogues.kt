@@ -25,6 +25,7 @@ object Dialogues {
     fun SAY_HELLO() ="✨*即刻抓取*\n" +
             "可以直接通过 *即刻 APP* 分享消息或者复制消息链接给我，我会将消息转成 Telegram 消息发送给您"
 
+
     fun GOTO_ISSUE_PAGE() = "如果发现本 Bot 有任何令您不满意的地方，请前往[本项目 Github Issues 页面](https://github.com/sorcererxw/jikeview-bot/issues)提出问题。\n" +
             "感谢您的使用和反馈"
 

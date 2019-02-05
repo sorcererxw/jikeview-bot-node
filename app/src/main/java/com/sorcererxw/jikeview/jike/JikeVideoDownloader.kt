@@ -63,6 +63,10 @@ class JikeVideoDownloader(
         val videoFile = if (mp4File.exists()) mp4File else downloadVideo()
         val thumbFile = if (thumbFile.exists()) thumbFile else downloadThumb(thumbnailUrl, thumbFile)
 
+        if (videoFile.length() > 50 * 1024 * 1024) {
+            throw Exception(Dialogues.ERROR_VIDEO_TOO_LARGE())
+        }
+
         val image = ImageIO.read(thumbFile.inputStream())
         val height = image.height
         val width = image.width
@@ -74,10 +78,15 @@ class JikeVideoDownloader(
         )
     }
 
+    @Throws(Exception::class)
     private fun downloadVideo(): File {
         URL(mediaUrl).openStream().use { inputStream ->
             val playlist: Playlist = PlaylistParser(inputStream, Format.EXT_M3U, Encoding.UTF_8, ParsingMode.LENIENT)
                     .parse()
+
+            if (playlist.mediaPlaylist.tracks.size > 500) {
+                throw Exception(Dialogues.ERROR_VIDEO_TOO_LARGE())
+            }
 
             val list = playlist.mediaPlaylist.tracks.map {
                 val target = File(tempDir, it.uri)
@@ -86,6 +95,10 @@ class JikeVideoDownloader(
             }
 
             combineTs(list, tsFile)
+
+            if (tsFile.length() > 50 * 1024 * 1024) {
+                throw Exception(Dialogues.ERROR_VIDEO_TOO_LARGE())
+            }
 
             convertTsToMp4(tsFile, mp4File)
 

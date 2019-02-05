@@ -6,6 +6,7 @@ A Telegram bot that can fetch Jike post for you.
 
 1. Create your bot with @BotFather
 2. Define env args
+    - BOT_NAME: the bot id, example: jikeview_bot
     - BOT_TOKEN: the bot token that @BotFather told you
     - FFMPEG: the path of ffmpeg on your device
     - FFPROBE: the path of ffprobe on your device
