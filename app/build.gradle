@@ -3,6 +3,24 @@ apply plugin: 'kotlin-spring'
 apply plugin: 'eclipse'
 apply plugin: 'org.springframework.boot'
 apply plugin: 'io.spring.dependency-management'
+apply plugin: 'com.bmuschko.docker-remote-api'
+apply plugin: 'com.bmuschko.docker-spring-boot-application'
+
+group = 'sorcererxw'
+version = '1.0.0'
+
+docker {
+    springBootApplication {
+        baseImage = 'kperson/alpine-java-8-ffmpeg'
+        ports = [8080]
+        tag = 'sorcererxw/jikeview-bot:1.0.0'
+    }
+}
+
+dockerCreateDockerfile {
+    environmentVariable 'FFMPEG', '/usr/local/bin/ffmpeg'
+    environmentVariable 'FFPROBE', '/usr/local/bin/ffprobe'
+}
 
 compileKotlin {
     kotlinOptions.jvmTarget = "1.8"

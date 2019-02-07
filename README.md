@@ -11,3 +11,9 @@ A Telegram bot that can fetch Jike post for you.
     - FFMPEG: the path of ffmpeg on your device
     - FFPROBE: the path of ffprobe on your device
 3. Done
+
+## Docker
+
+```bash
+docker -d  -e "BOT_TOKEN=<BOT_TOKEN>" -e "BOT_NAME=<BOT_NAME>" run sorcererxw/jikeview-bot:1.0.0
+```
