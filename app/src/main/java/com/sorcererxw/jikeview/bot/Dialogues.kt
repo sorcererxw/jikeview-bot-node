@@ -2,8 +2,6 @@
 
 package com.sorcererxw.jikeview.bot
 
-import com.sun.org.apache.bcel.internal.generic.GOTO
-
 /**
  * @author: Sorcerer
  * @date: 2/3/2019
