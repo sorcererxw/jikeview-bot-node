@@ -15,5 +15,5 @@ A Telegram bot that can fetch Jike post for you.
 ## Docker
 
 ```bash
-docker -d  -e "BOT_TOKEN=<BOT_TOKEN>" -e "BOT_NAME=<BOT_NAME>" run sorcererxw/jikeview-bot:1.0.0
+docker run -d -e "BOT_TOKEN=<BOT_TOKEN>" -e "BOT_NAME=<BOT_NAME>" sorcererxw/jikeview-bot:1.0.0
 ```
