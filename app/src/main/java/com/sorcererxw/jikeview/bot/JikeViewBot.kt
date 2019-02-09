@@ -66,6 +66,7 @@ class JikeViewBot : TelegramLongPollingBot(DEFAULT_OPTION) {
                         SendMessage().setChatId(message.chatId)
                                 .setText(Dialogues.PROGRESS_HANDLING_URL(url))
                                 .setReplyToMessageId(message.messageId)
+                                .disableWebPagePreview()
                 )
                 Observable.just(url)
                         .observeOn(worker)
@@ -76,17 +77,20 @@ class JikeViewBot : TelegramLongPollingBot(DEFAULT_OPTION) {
                                 EditMessageText().setChatId(message.chatId)
                                         .setMessageId(progress.messageId)
                                         .setText(Dialogues.CANNOT_HANDEL_URL(postUrl))
+                                        .disableWebPagePreview()
                             } else {
                                 try {
                                     sendPost(message.chatId, post, progress.messageId)
                                     EditMessageText().setChatId(message.chatId)
                                             .setMessageId(progress.messageId)
                                             .setText(Dialogues.PROGRESS_HANDEL_URL_SUCCESS(postUrl))
+                                            .disableWebPagePreview()
                                 } catch (e: Exception) {
                                     EditMessageText()
                                             .setChatId(message.chatId)
                                             .setMessageId(progress.messageId)
                                             .setText("${Dialogues.PROGRESS_HANDEL_URL_FAILED(postUrl)}\n${e.message}")
+                                            .disableWebPagePreview()
                                 }
                             }
                         }
