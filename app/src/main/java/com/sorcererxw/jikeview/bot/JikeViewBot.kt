@@ -6,6 +6,8 @@ import com.sorcererxw.jikeview.jike.JikeVideoDownloader
 import com.sorcererxw.jikeview.jike.PostType
 import com.sorcererxw.jikeview.jike.entity.Post
 import com.sorcererxw.jikeview.util.StringUtil
+import io.reactivex.Observable
+import io.reactivex.schedulers.Schedulers
 import org.springframework.stereotype.Component
 import org.telegram.telegrambots.bots.DefaultBotOptions
 import org.telegram.telegrambots.bots.TelegramLongPollingBot
@@ -15,7 +17,6 @@ import org.telegram.telegrambots.meta.api.methods.send.SendMessage
 import org.telegram.telegrambots.meta.api.methods.send.SendVideo
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText
 import org.telegram.telegrambots.meta.api.objects.InputFile
-import org.telegram.telegrambots.meta.api.objects.Message
 import org.telegram.telegrambots.meta.api.objects.Update
 import org.telegram.telegrambots.meta.api.objects.media.InputMedia
 import org.telegram.telegrambots.meta.api.objects.media.InputMediaPhoto
@@ -47,7 +48,7 @@ class JikeViewBot : TelegramLongPollingBot(DEFAULT_OPTION) {
                 execute(SendMessage().setChatId(message.chatId)
                         .enableMarkdown(true)
                         .setText(Dialogues.SAY_HELLO()))
-            }else if(message.text == Commands.REPORT){
+            } else if (message.text == Commands.REPORT) {
                 execute(SendMessage().setChatId(message.chatId)
                         .enableMarkdown(true)
                         .setText(Dialogues.GOTO_ISSUE_PAGE()))
@@ -61,32 +62,43 @@ class JikeViewBot : TelegramLongPollingBot(DEFAULT_OPTION) {
                 return
             }
             urls.forEach { url ->
-                val progress = execute(SendMessage().setChatId(message.chatId)
-                        .setText(Dialogues.PROGRESS_HANDLING_URL(url)))
-                val post = JikeClient.instance.getPostByUrl(url)
-                val editMessageText: EditMessageText = if (post != null) {
-                    try {
-                        sendPost(message, post)
-                        EditMessageText().setChatId(message.chatId)
-                                .setMessageId(progress.messageId)
-                                .setText(Dialogues.PROGRESS_HANDEL_URL_SUCCESS(url))
-                    } catch (e: Exception) {
-                        EditMessageText()
-                                .setChatId(message.chatId)
-                                .setMessageId(progress.messageId)
-                                .setText("${Dialogues.PROGRESS_HANDEL_URL_FAILED(url)}\n${e.message}")
-                    }
-                } else {
-                    EditMessageText().setChatId(message.chatId).setMessageId(progress.messageId)
-                            .setText(Dialogues.CANNOT_HANDEL_URL(url))
-                }
-                execute(editMessageText)
+                val progress = execute(
+                        SendMessage().setChatId(message.chatId)
+                                .setText(Dialogues.PROGRESS_HANDLING_URL(url))
+                                .setReplyToMessageId(message.messageId)
+                )
+                Observable.just(url)
+                        .observeOn(worker)
+                        .map { postUrl ->
+                            val post = JikeClient.instance.getPostByUrl(postUrl)
+
+                            if (post == null) {
+                                EditMessageText().setChatId(message.chatId)
+                                        .setMessageId(progress.messageId)
+                                        .setText(Dialogues.CANNOT_HANDEL_URL(postUrl))
+                            } else {
+                                try {
+                                    sendPost(message.chatId, post, progress.messageId)
+                                    EditMessageText().setChatId(message.chatId)
+                                            .setMessageId(progress.messageId)
+                                            .setText(Dialogues.PROGRESS_HANDEL_URL_SUCCESS(postUrl))
+                                } catch (e: Exception) {
+                                    EditMessageText()
+                                            .setChatId(message.chatId)
+                                            .setMessageId(progress.messageId)
+                                            .setText("${Dialogues.PROGRESS_HANDEL_URL_FAILED(postUrl)}\n${e.message}")
+                                }
+                            }
+                        }
+                        .subscribe { execute(it) }
             }
         }
     }
 
+    private val worker = Schedulers.io()
+
     @Throws(UnsupportedOperationException::class)
-    private fun sendPost(message: Message, post: Post) {
+    private fun sendPost(chatId: Long, post: Post, progressId: Int) {
         val data = post.postData
         val type = PostType.from(data.type)
         val picture = data.pictures ?: data.pictureUrls
@@ -99,7 +111,7 @@ class JikeViewBot : TelegramLongPollingBot(DEFAULT_OPTION) {
                     .download()
 
             val sendVideo = SendVideo()
-                    .setChatId(message.chatId)
+                    .setChatId(chatId)
                     .enableMarkdown(true)
                     .setSupportsStreaming(true)
                     .setVideo(parserVideo.videoFile)
@@ -108,6 +120,7 @@ class JikeViewBot : TelegramLongPollingBot(DEFAULT_OPTION) {
                     .setHeight(parserVideo.height)
                     .setWidth(parserVideo.width)
                     .setCaption(content)
+                    .setReplyToMessageId(progressId)
             execute(sendVideo)
         } else if (picture != null && picture.isNotEmpty()) {
 
@@ -129,11 +142,14 @@ class JikeViewBot : TelegramLongPollingBot(DEFAULT_OPTION) {
                 mediaList[0].enableMarkdown(true)
             }
             val action = SendMediaGroup()
-                    .setChatId(message.chatId)
+                    .setChatId(chatId)
+                    .setReplyToMessageId(progressId)
                     .also { it.media = mediaList }
             execute(action)
         } else {
-            val action = SendMessage().setChatId(message.chatId).setText(content).enableMarkdown(true)
+            val action = SendMessage()
+                    .setChatId(chatId).setText(content).enableMarkdown(true)
+                    .setReplyToMessageId(progressId)
             execute(action)
         }
     }
