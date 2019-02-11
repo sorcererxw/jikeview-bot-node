@@ -9,8 +9,8 @@ jobs:
       - image: circleci/openjdk:8-jdk-browsers
     steps:
       - checkout # clone repository
-      - setup_remote_docker # setup docker env
-        docker_layer_caching: true
+      - setup_remote_docker: # setup docker env
+          docker_layer_caching: true
       - run: chmod +x ./gradlew
       - run: export version=$(./gradlew :app:getVersion -q)
       - run: echo $version
