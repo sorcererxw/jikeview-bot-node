@@ -2,7 +2,10 @@
 
 chmod +x ./gradlew
 export image_version=$(./gradlew :app:getVersion -q)
+echo "lalalala"
+echo ${image_version}
 echo "version: ${image_version}"
+echo "lalalala"
 ./gradlew dockerBuildImage
 docker images
 eval "docker tag sorcererxw/jikeview-bot:${image_version} sorcererxw/jikeview-bot:latest"
