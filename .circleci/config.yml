@@ -15,7 +15,9 @@ jobs:
       - run: chmod +x ./gradlew
       - run: ./gradlew :app:test
       - run: ./gradlew :app:dockerBuildImage
+      - run: echo $(./gradlew :app:getVersion -q)
       - run: export image_version=$(./gradlew :app:getVersion -q) # mush run a gradlew command before this line
+      - run: echo $image_version
       - run: eval "docker tag sorcererxw/jikeview-bot:${image_version} sorcererxw/jikeview-bot:latest"
       - run: docker images
       - run: eval "docker push sorcererxw/jikeview-bot:${image_version}"
