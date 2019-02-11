@@ -1,6 +1,10 @@
 version: 2
 jobs:
   build:
+    branches:
+      only:
+        - master
+        - ci
     docker:
       - image: circleci/openjdk:8-jdk-browsers
     steps:
@@ -11,7 +15,7 @@ jobs:
       - run: ./gradlew dockerBuildImage
       - run: docker images
       - run: docker login -u $docker_username -p $docker_password
-      - run: eval "docker tag sorcererxw/jikeview-bot:$version sorcererxw/jikeview-bot:latest"
-      - run: eval "docker push sorcererxw/jikeview-bot:$version"
-      - run: eval "docker push sorcererxw/jikeview-bot:latest"
+      - run: docker tag sorcererxw/jikeview-bot:$version sorcererxw/jikeview-bot:latest
+      - run: docker push sorcererxw/jikeview-bot:$version
+      - run: docker push sorcererxw/jikeview-bot:latest
       - run: ssh -T $server_user@$server_address "bash -s" <./scripts/deploy.sh $bot_name $bot_token
