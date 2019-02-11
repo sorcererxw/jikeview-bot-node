@@ -32,9 +32,9 @@ import java.io.File
 class JikeViewBot : TelegramLongPollingBot(DEFAULT_OPTION) {
     companion object {
         private val DEFAULT_OPTION = ApiContext.getInstance(DefaultBotOptions::class.java)
-//                .also { it.proxyHost = "127.0.0.1" }
-//                .also { it.proxyPort = 1080 }
-//                .also { it.proxyType = DefaultBotOptions.ProxyType.SOCKS5 }
+                .also { it.proxyHost = "127.0.0.1" }
+                .also { it.proxyPort = 1080 }
+                .also { it.proxyType = DefaultBotOptions.ProxyType.SOCKS5 }
     }
 
     override fun getBotUsername(): String = Config.BOT_NAME
@@ -111,21 +111,27 @@ class JikeViewBot : TelegramLongPollingBot(DEFAULT_OPTION) {
         val content = generateContent(post, type)
 
         if (video != null) {
-            val parserVideo = JikeVideoDownloader(File("temp"), video, data.id, type)
-                    .download()
+            val downloader = JikeVideoDownloader(File("temp"), video, data.id, type)
 
-            val sendVideo = SendVideo()
-                    .setChatId(chatId)
-                    .enableMarkdown(true)
-                    .setSupportsStreaming(true)
-                    .setVideo(parserVideo.videoFile)
-                    .setThumb(InputFile(parserVideo.thumbFile, parserVideo.thumbFile.name))
-                    .setDuration(parserVideo.duration)
-                    .setHeight(parserVideo.height)
-                    .setWidth(parserVideo.width)
-                    .setCaption(content)
-                    .setReplyToMessageId(progressId)
-            execute(sendVideo)
+            try {
+                val parserVideo = downloader.download()
+                val sendVideo = SendVideo()
+                        .setChatId(chatId)
+                        .enableMarkdown(true)
+                        .setSupportsStreaming(true)
+                        .setVideo(parserVideo.videoFile)
+                        .setThumb(InputFile(parserVideo.thumbFile, parserVideo.thumbFile.name))
+                        .setDuration(parserVideo.duration)
+                        .setHeight(parserVideo.height)
+                        .setWidth(parserVideo.width)
+                        .setCaption(content)
+                        .setReplyToMessageId(progressId)
+                execute(sendVideo)
+            } catch (e: Exception) {
+                downloader.clear()
+                throw e
+            }
+
         } else if (picture != null && picture.isNotEmpty()) {
 
             val gallery = if (picture[0].format == "gif") picture.subList(0, 0) else picture.filter { it.format != "gif" }
