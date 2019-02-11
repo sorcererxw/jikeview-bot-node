@@ -13,7 +13,7 @@ docker {
     springBootApplication {
         baseImage = 'kperson/alpine-java-8-ffmpeg'
         ports = [8080]
-        tag = "sorcererxw/jikeview-bot:$version"
+        tag = "sorcererxw/jikeview-bot:" + version
     }
 }
 
