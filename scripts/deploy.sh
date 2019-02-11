@@ -6,7 +6,7 @@ bot_token=$2
 image_name="sorcererxw/jikeview-bot:latest"
 container_name="jikeview-bot"
 
-if [[  "$(docker ps -q -f name=${container_name})" ]]; then
+if [[  "$(docker ps -a -q -f name=${container_name})" ]]; then
     eval "docker update --restart=no ${container_name}"
     eval "docker stop ${container_name}"
     eval "docker rm ${container_name}"
