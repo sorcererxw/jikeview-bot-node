@@ -22,6 +22,9 @@ import org.telegram.telegrambots.meta.api.objects.media.InputMedia
 import org.telegram.telegrambots.meta.api.objects.media.InputMediaPhoto
 import org.telegram.telegrambots.meta.api.objects.media.InputMediaVideo
 import java.io.File
+import java.net.InetAddress
+import java.net.Socket
+
 
 /**
  * @author: Sorcerer
@@ -32,9 +35,34 @@ import java.io.File
 class JikeViewBot : TelegramLongPollingBot(DEFAULT_OPTION) {
     companion object {
         private val DEFAULT_OPTION = ApiContext.getInstance(DefaultBotOptions::class.java)
-//                .also { it.proxyHost = "127.0.0.1" }
-//                .also { it.proxyPort = 1080 }
-//                .also { it.proxyType = DefaultBotOptions.ProxyType.SOCKS5 }
+                .also {
+                    if (isAbleToAccessTelegram()) return@also
+                    println("Cannot reach Telegram, setup proxy")
+                    it.proxyHost = "127.0.0.1"
+                    it.proxyPort = 1080
+                    it.proxyType = DefaultBotOptions.ProxyType.SOCKS5
+                }
+
+        private fun isAbleToAccessTelegram(): Boolean {
+            return try {
+                val address = InetAddress.getByName("api.telegram.org")
+                val reachable = address.isReachable(10000)
+                println("Is Telegram reachable? $reachable")
+                reachable
+            } catch (e: Exception) {
+                e.printStackTrace()
+                false
+            }
+        }
+
+        private fun isAddressAvailable(address: String, port: Int): Boolean {
+            return try {
+                Socket(address, port)
+                true
+            } catch (e: Exception) {
+                false
+            }
+        }
     }
 
     override fun getBotUsername(): String = Config.BOT_NAME
