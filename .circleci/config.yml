@@ -12,8 +12,10 @@ jobs:
       - setup_remote_docker: # setup docker env
           docker_layer_caching: true
       - run: chmod +x ./gradlew
-      - run: image_version=$(./gradlew :app:getVersion -q)
+      - run: export image_version=$(./gradlew :app:getVersion -q)
+      - run: echo $(./gradlew :app:getVersion -q)
       - run: echo "$image_version"
+      - run: echo $image_version
       - run: echo image_version
       - run: ./gradlew dockerBuildImage
       - run: docker images
