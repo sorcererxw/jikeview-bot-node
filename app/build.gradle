@@ -7,19 +7,25 @@ apply plugin: 'com.bmuschko.docker-remote-api'
 apply plugin: 'com.bmuschko.docker-spring-boot-application'
 
 group = 'sorcererxw'
-version = '1.0.2'
+version = '1.0.5'
 
 docker {
     springBootApplication {
         baseImage = 'kperson/alpine-java-8-ffmpeg'
         ports = [8080]
-        tag = "sorcererxw/jikeview-bot:1.0.2"
+        tag = "sorcererxw/jikeview-bot:" + version
     }
 }
 
 dockerCreateDockerfile {
     environmentVariable 'FFMPEG', '/usr/local/bin/ffmpeg'
     environmentVariable 'FFPROBE', '/usr/local/bin/ffprobe'
+}
+
+task getVersion {
+    doLast {
+        println version
+    }
 }
 
 compileKotlin {
