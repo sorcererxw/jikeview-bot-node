@@ -106,6 +106,13 @@ class JikeVideoDownloader(
         }
     }
 
+    /**
+     * delete the temp file
+     */
+    fun clear() {
+        if (mediaDir.exists()) mediaDir.delete()
+    }
+
     companion object {
         private fun downloadThumb(thumbnailUrl: String, target: File): File {
             FileUtils.copyURLToFile(URL(thumbnailUrl), target)
