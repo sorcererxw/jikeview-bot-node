@@ -12,14 +12,5 @@ jobs:
       - setup_remote_docker: # setup docker env
           docker_layer_caching: true
       - run: docker login -u $docker_username -p $docker_password
-      - run: chmod +x ./gradlew
-      - run: ./gradlew :app:test
-      - run: ./gradlew :app:dockerBuildImage
-      - run: echo $(./gradlew :app:getVersion -q)
-      - run: export image_version=$(./gradlew :app:getVersion -q) # mush run a gradlew command before this line
-      - run: echo $image_version
-      - run: eval "docker tag sorcererxw/jikeview-bot:${image_version} sorcererxw/jikeview-bot:latest"
-      - run: docker images
-      - run: eval "docker push sorcererxw/jikeview-bot:${image_version}"
-      - run: docker push sorcererxw/jikeview-bot:latest
+      - run: chmod +x ./scripts/build.sh && ./scripts/build.sh
       - run: ssh -T $server_user@$server_address "bash -s" <./scripts/deploy.sh $bot_name $bot_token
