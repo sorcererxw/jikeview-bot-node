@@ -7,7 +7,7 @@ apply plugin: 'com.bmuschko.docker-remote-api'
 apply plugin: 'com.bmuschko.docker-spring-boot-application'
 
 group = 'sorcererxw'
-version = '1.0.4'
+version = '1.0.5'
 
 docker {
     springBootApplication {
