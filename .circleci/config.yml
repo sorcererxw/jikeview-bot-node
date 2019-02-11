@@ -4,5 +4,7 @@ jobs:
     docker:
       - image: circleci/ruby:2.4.1
     steps:
-      - checkout
-      - run: echo "A first hello"
+      - checkout # clone repository
+      - setup_remote_docker # setup docker env
+      - run: gradlew dockerBuildImage
+      - run: docker images
