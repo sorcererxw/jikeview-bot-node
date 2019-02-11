@@ -16,8 +16,8 @@ jobs:
       - run: ./gradlew :app:test
       - run: ./gradlew :app:dockerBuildImage
       - run: export image_version=$(./gradlew :app:getVersion -q) # mush run a gradlew command before this line
-      - run: docker tag sorcererxw/jikeview-bot:${image_version} sorcererxw/jikeview-bot:latest
+      - run: eval "docker tag sorcererxw/jikeview-bot:${image_version} sorcererxw/jikeview-bot:latest"
       - run: docker images
-      - run: docker push sorcererxw/jikeview-bot:${image_version}
+      - run: eval "docker push sorcererxw/jikeview-bot:${image_version}"
       - run: docker push sorcererxw/jikeview-bot:latest
       - run: ssh -T $server_user@$server_address "bash -s" <./scripts/deploy.sh $bot_name $bot_token
