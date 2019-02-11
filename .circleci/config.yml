@@ -6,5 +6,6 @@ jobs:
     steps:
       - checkout # clone repository
       - setup_remote_docker # setup docker env
+      - run: chmod +x ./gradlew
       - run: ./gradlew dockerBuildImage
       - run: docker images
