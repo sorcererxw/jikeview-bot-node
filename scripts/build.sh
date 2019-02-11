@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
 chmod +x ./gradlew
+./gradlew :telemoji-bot:test
 export image_version=$(./gradlew :app:getVersion -q)
 echo "lalalala"
 echo ${image_version}
