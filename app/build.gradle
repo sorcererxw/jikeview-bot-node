@@ -11,15 +11,15 @@ version = '1.0.7'
 
 docker {
     springBootApplication {
-        baseImage = 'kperson/alpine-java-8-ffmpeg'
+        baseImage = 'sorcererxw/openjdk-8-ffmpeg:latest'
         ports = [8080]
         tag = "sorcererxw/jikeview-bot:" + version
     }
 }
 
 dockerCreateDockerfile {
-    environmentVariable 'FFMPEG', '/usr/local/bin/ffmpeg'
-    environmentVariable 'FFPROBE', '/usr/local/bin/ffprobe'
+    environmentVariable 'FFMPEG', '/usr/bin/ffmpeg'
+    environmentVariable 'FFPROBE', '/usr/bin/ffprobe'
 }
 
 task getVersion {
