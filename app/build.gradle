@@ -7,11 +7,11 @@ apply plugin: 'com.bmuschko.docker-remote-api'
 apply plugin: 'com.bmuschko.docker-spring-boot-application'
 
 group = 'sorcererxw'
-version = '1.0.7'
+version = '1.0.8'
 
 docker {
     springBootApplication {
-        baseImage = 'sorcererxw/openjdk-8-ffmpeg:latest'
+        baseImage = 'sorcererxw/openjdk-8-ffmpeg:latest '
         ports = [8080]
         tag = "sorcererxw/jikeview-bot:" + version
     }
