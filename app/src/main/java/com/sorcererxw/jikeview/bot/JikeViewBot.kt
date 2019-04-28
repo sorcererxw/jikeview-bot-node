@@ -4,26 +4,33 @@ import com.sorcererxw.jikeview.jike.JikeClient
 import com.sorcererxw.jikeview.jike.JikeUrlParser
 import com.sorcererxw.jikeview.jike.JikeVideoDownloader
 import com.sorcererxw.jikeview.jike.PostType
+import com.sorcererxw.jikeview.jike.entity.Picture
 import com.sorcererxw.jikeview.jike.entity.Post
+import com.sorcererxw.jikeview.jike.entity.Video
 import com.sorcererxw.jikeview.util.StringUtil
-import io.reactivex.Observable
-import io.reactivex.schedulers.Schedulers
 import org.springframework.stereotype.Component
 import org.telegram.telegrambots.bots.DefaultBotOptions
 import org.telegram.telegrambots.bots.TelegramLongPollingBot
 import org.telegram.telegrambots.meta.ApiContext
+import org.telegram.telegrambots.meta.api.methods.AnswerCallbackQuery
 import org.telegram.telegrambots.meta.api.methods.send.SendMediaGroup
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage
 import org.telegram.telegrambots.meta.api.methods.send.SendVideo
+import org.telegram.telegrambots.meta.api.methods.updatingmessages.DeleteMessage
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText
+import org.telegram.telegrambots.meta.api.objects.CallbackQuery
 import org.telegram.telegrambots.meta.api.objects.InputFile
+import org.telegram.telegrambots.meta.api.objects.Message
 import org.telegram.telegrambots.meta.api.objects.Update
 import org.telegram.telegrambots.meta.api.objects.media.InputMedia
 import org.telegram.telegrambots.meta.api.objects.media.InputMediaPhoto
 import org.telegram.telegrambots.meta.api.objects.media.InputMediaVideo
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton
 import java.io.File
 import java.net.InetAddress
 import java.net.Socket
+import java.util.concurrent.Executors
 
 
 /**
@@ -70,7 +77,27 @@ class JikeViewBot : TelegramLongPollingBot(DEFAULT_OPTION) {
     override fun getBotToken(): String = Config.BOT_TOKEN
 
     override fun onUpdateReceived(update: Update) {
-        val message = update.message ?: return
+
+        if (update.hasCallbackQuery()) {
+            handleCallback(update.callbackQuery)
+        } else if (update.hasMessage()) {
+            handleUpdateMessage(update.message)
+        }
+    }
+
+    private val workerPool = Executors.newCachedThreadPool()
+
+    private fun handleCallback(callbackQuery: CallbackQuery) {
+        println(callbackQuery)
+        val message = callbackQuery.message
+//        execute(ForwardMessage()
+//                .setFromChatId(message.chatId)
+//                .setMessageId(message.messageId))
+        execute(AnswerCallbackQuery()
+                .setCallbackQueryId(callbackQuery.id))
+    }
+
+    private fun handleUpdateMessage(message: Message) {
         if (message.isCommand) {
             if (message.text == Commands.START) {
                 execute(SendMessage().setChatId(message.chatId)
@@ -96,38 +123,34 @@ class JikeViewBot : TelegramLongPollingBot(DEFAULT_OPTION) {
                                 .setReplyToMessageId(message.messageId)
                                 .disableWebPagePreview()
                 )
-                Observable.just(url)
-                        .observeOn(worker)
-                        .map { postUrl ->
-                            val post = JikeClient.instance.getPostByUrl(postUrl)
+                workerPool.execute {
+                    val post = JikeClient.instance.getPostByUrl(url)
 
-                            if (post == null) {
-                                EditMessageText().setChatId(message.chatId)
-                                        .setMessageId(progress.messageId)
-                                        .setText(Dialogues.CANNOT_HANDEL_URL(postUrl))
-                                        .disableWebPagePreview()
-                            } else {
-                                try {
-                                    sendPost(message.chatId, post, progress.messageId)
-                                    EditMessageText().setChatId(message.chatId)
-                                            .setMessageId(progress.messageId)
-                                            .setText(Dialogues.PROGRESS_HANDEL_URL_SUCCESS(postUrl))
-                                            .disableWebPagePreview()
-                                } catch (e: Exception) {
-                                    EditMessageText()
-                                            .setChatId(message.chatId)
-                                            .setMessageId(progress.messageId)
-                                            .setText("${Dialogues.PROGRESS_HANDEL_URL_FAILED(postUrl)}\n${e.message}")
-                                            .disableWebPagePreview()
-                                }
-                            }
-                        }
-                        .subscribe { execute(it) }
+                    if (post == null) {
+                        execute(EditMessageText().setChatId(message.chatId)
+                                .setMessageId(progress.messageId)
+                                .setText(Dialogues.CANNOT_HANDEL_URL(url))
+                                .disableWebPagePreview())
+                        return@execute
+                    }
+                    try {
+                        sendPost(message.chatId, post, progress.messageId)
+                        execute(EditMessageText().setChatId(message.chatId)
+                                .setMessageId(progress.messageId)
+                                .setText(Dialogues.PROGRESS_HANDEL_URL_SUCCESS(url))
+                                .disableWebPagePreview())
+                    } catch (e: Exception) {
+                        execute(DeleteMessage().setChatId(message.chatId).setMessageId(progress.messageId))
+                        execute(SendMessage()
+                                .setReplyToMessageId(message.messageId)
+                                .setChatId(message.chatId)
+                                .setText("${Dialogues.PROGRESS_HANDEL_URL_FAILED(url)}\n${e.message}")
+                                .disableWebPagePreview())
+                    }
+                }
             }
         }
     }
-
-    private val worker = Schedulers.io()
 
     @Throws(UnsupportedOperationException::class)
     private fun sendPost(chatId: Long, post: Post, progressId: Int) {
@@ -139,58 +162,77 @@ class JikeViewBot : TelegramLongPollingBot(DEFAULT_OPTION) {
         val content = generateContent(post, type)
 
         if (video != null) {
-            val downloader = JikeVideoDownloader(File("temp"), video, data.id, type)
-
-            try {
-                val parserVideo = downloader.download()
-                val sendVideo = SendVideo()
-                        .setChatId(chatId)
-                        .enableMarkdown(true)
-                        .setSupportsStreaming(true)
-                        .setVideo(parserVideo.videoFile)
-                        .setThumb(InputFile(parserVideo.thumbFile, parserVideo.thumbFile.name))
-                        .setDuration(parserVideo.duration)
-                        .setHeight(parserVideo.height)
-                        .setWidth(parserVideo.width)
-                        .setCaption(content)
-                        .setReplyToMessageId(progressId)
-                execute(sendVideo)
-            } catch (e: Exception) {
-                downloader.clear()
-                throw e
-            }
-
+            sendVideoPost(chatId, progressId, content, video, data.id, type)
         } else if (picture != null && picture.isNotEmpty()) {
-
-            val gallery = if (picture[0].format == "gif") picture.subList(0, 0) else picture.filter { it.format != "gif" }
-
-            val mediaList: List<InputMedia<*>> = gallery
-                    .filter { !it.picUrl.isNullOrEmpty() }
-                    .map { pic ->
-                        val picUrl = pic.picUrl!!
-                        return@map if (pic.format == "gif") {
-                            InputMediaVideo(picUrl, "")
-                        } else {
-                            InputMediaPhoto(picUrl, "")
-                        }
-                    }
-
-            if (mediaList.isNotEmpty()) {
-                mediaList[0].caption = content
-                mediaList[0].enableMarkdown(true)
-            }
-            val action = SendMediaGroup()
-                    .setChatId(chatId)
-                    .setReplyToMessageId(progressId)
-                    .also { it.media = mediaList }
-            execute(action)
+            sendMediaGroupPost(chatId, progressId, picture, content)
         } else {
-            val action = SendMessage()
-                    .setChatId(chatId).setText(content).enableMarkdown(true)
-                    .setReplyToMessageId(progressId)
-            execute(action)
+            sendTextPost(chatId, progressId, content)
         }
     }
+
+    private fun sendVideoPost(chatId: Long, progressId: Int, caption: String,
+                              video: Video, postId: String, type: PostType) {
+        val downloader = JikeVideoDownloader(File("temp"), video, postId, type)
+
+        try {
+            val parserVideo = downloader.download()
+            val sendVideo = SendVideo()
+                    .setChatId(chatId)
+                    .enableMarkdown(true)
+                    .setSupportsStreaming(true)
+                    .setVideo(parserVideo.videoFile)
+                    .setThumb(InputFile(parserVideo.thumbFile, parserVideo.thumbFile.name))
+                    .setDuration(parserVideo.duration)
+                    .setHeight(parserVideo.height)
+                    .setWidth(parserVideo.width)
+                    .setCaption(caption)
+                    .setReplyToMessageId(progressId)
+                    .setReplyMarkup(shareMarkup)
+            execute(sendVideo)
+        } catch (e: Exception) {
+            downloader.clear()
+            throw e
+        }
+    }
+
+    private fun sendMediaGroupPost(chatId: Long, progressId: Int, pictures: List<Picture>, caption: String) {
+        val gallery = if (pictures[0].format == "gif") pictures.subList(0, 0) else pictures.filter { it.format != "gif" }
+
+        val mediaList: List<InputMedia<*>> = gallery
+                .filter { !it.picUrl.isNullOrEmpty() }
+                .map { pic ->
+                    val picUrl = pic.picUrl!!
+                    return@map if (pic.format == "gif") {
+                        InputMediaVideo(picUrl, "")
+                    } else {
+                        InputMediaPhoto(picUrl, "")
+                    }
+                }
+
+        if (mediaList.isNotEmpty()) {
+            mediaList[0].caption = caption
+            mediaList[0].enableMarkdown(true)
+        }
+        val action = SendMediaGroup()
+                .setChatId(chatId)
+                .setReplyToMessageId(progressId)
+                .also { it.media = mediaList }
+        execute(action)
+    }
+
+    private fun sendTextPost(chatId: Long, progressId: Int, text: String) {
+        val action = SendMessage()
+                .setChatId(chatId).setText(text).enableMarkdown(true)
+                .setReplyToMessageId(progressId)
+                .setReplyMarkup(shareMarkup)
+        execute(action)
+    }
+
+    private val shareMarkup = InlineKeyboardMarkup().setKeyboard(listOf(listOf(
+            InlineKeyboardButton()
+                    .setText(Dialogues.ACTION_SHARE())
+                    .setCallbackData("https://t.me/share/url?url=12&text=12")
+    )))
 
     private fun generateContent(post: Post, type: PostType): String {
         val data = post.postData

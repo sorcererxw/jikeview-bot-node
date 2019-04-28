@@ -41,17 +41,16 @@ targetCompatibility = 1.8
 dependencies {
     compile("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
     compile("org.jetbrains.kotlin:kotlin-reflect")
-    compile("io.reactivex.rxjava2:rxkotlin:2.3.0")
     compile("com.fasterxml.jackson.module:jackson-module-kotlin")
 
     compile('org.springframework.boot:spring-boot-starter-web')
     compile('org.springframework.boot:spring-boot-starter')
     testCompile('org.springframework.boot:spring-boot-starter-test')
 
-    compile('org.telegram:telegrambots:4.1.2')
-    compile('org.telegram:telegrambots-spring-boot-starter:4.1.2')
-    compile('org.telegram:telegrambots-abilities:4.1.2')
-    compile('org.telegram:telegrambotsextensions:4.1.2')
+    compile('org.telegram:telegrambots:4.2')
+    compile('org.telegram:telegrambots-spring-boot-starter:4.2')
+    compile('org.telegram:telegrambots-abilities:4.2')
+    compile('org.telegram:telegrambotsextensions:4.2')
 
     compile("com.google.code.gson:gson:2.8.5")
     compile("com.google.guava:guava:26.0-jre")

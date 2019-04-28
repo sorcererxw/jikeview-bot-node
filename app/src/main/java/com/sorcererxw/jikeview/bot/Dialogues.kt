@@ -30,4 +30,6 @@ object Dialogues {
     fun ERROR_PHOTO_TOO_LARGE() = "图片体积过大"
 
     fun ERROR_VIDEO_TOO_LARGE() = "视频体积过大"
+
+    fun ACTION_SHARE() = "分享"
 }
