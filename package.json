@@ -6,10 +6,12 @@
   "license": "GPL-3.0-or-later",
   "dependencies": {
     "node-fetch": "^2.5.0",
+    "node-telegram-bot-api": "^0.30.0",
     "socks-proxy-agent": "^4.0.2",
     "telegraf": "^3.29.0"
   },
   "devDependencies": {
+    "@types/node-telegram-bot-api": "^0.31.0",
     "jest": "^24.8.0",
     "nodemon": "^1.13.0",
     "ts-jest": "^24.0.2",
