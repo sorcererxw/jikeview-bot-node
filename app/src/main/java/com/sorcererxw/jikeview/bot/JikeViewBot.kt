@@ -1,15 +1,19 @@
 package com.sorcererxw.jikeview.bot
 
+<<<<<<< HEAD
 import com.sorcererxw.jikeview.jike.JikeClient
 import com.sorcererxw.jikeview.jike.JikeUrlParser
 import com.sorcererxw.jikeview.jike.JikeVideoDownloader
 import com.sorcererxw.jikeview.jike.PostType
 import com.sorcererxw.jikeview.jike.entity.Post
+=======
+>>>>>>> use thread pool to handle requests
 import com.sorcererxw.jikeview.util.StringUtil
 import org.springframework.stereotype.Component
 import org.telegram.telegrambots.bots.DefaultBotOptions
 import org.telegram.telegrambots.bots.TelegramLongPollingBot
 import org.telegram.telegrambots.meta.ApiContext
+<<<<<<< HEAD
 import org.telegram.telegrambots.meta.api.methods.send.SendMediaGroup
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage
 import org.telegram.telegrambots.meta.api.methods.send.SendVideo
@@ -21,6 +25,15 @@ import org.telegram.telegrambots.meta.api.objects.media.InputMedia
 import org.telegram.telegrambots.meta.api.objects.media.InputMediaPhoto
 import org.telegram.telegrambots.meta.api.objects.media.InputMediaVideo
 import java.io.File
+=======
+import org.telegram.telegrambots.meta.api.methods.AnswerCallbackQuery
+import org.telegram.telegrambots.meta.api.methods.send.SendMessage
+import org.telegram.telegrambots.meta.api.objects.CallbackQuery
+import org.telegram.telegrambots.meta.api.objects.Message
+import org.telegram.telegrambots.meta.api.objects.Update
+import java.net.InetAddress
+import java.util.concurrent.Executors
+>>>>>>> use thread pool to handle requests
 
 /**
  * @author: Sorcerer
@@ -31,9 +44,31 @@ import java.io.File
 class JikeViewBot : TelegramLongPollingBot(DEFAULT_OPTION) {
     companion object {
         private val DEFAULT_OPTION = ApiContext.getInstance(DefaultBotOptions::class.java)
+<<<<<<< HEAD
 //                .also { it.proxyHost = "127.0.0.1" }
 //                .also { it.proxyPort = 1080 }
 //                .also { it.proxyType = DefaultBotOptions.ProxyType.SOCKS5 }
+=======
+                .also {
+                    if (isAbleToAccessTelegram()) return@also
+                    println("Cannot reach Telegram, setup proxy")
+                    it.proxyHost = "127.0.0.1"
+                    it.proxyPort = 1080
+                    it.proxyType = DefaultBotOptions.ProxyType.SOCKS5
+                }
+
+        private fun isAbleToAccessTelegram(): Boolean {
+            return try {
+                val address = InetAddress.getByName("api.telegram.org")
+                val reachable = address.isReachable(10000)
+                println("Is Telegram reachable? $reachable")
+                reachable
+            } catch (e: Exception) {
+                e.printStackTrace()
+                false
+            }
+        }
+>>>>>>> use thread pool to handle requests
     }
 
     override fun getBotUsername(): String = Config.BOT_NAME
@@ -41,7 +76,30 @@ class JikeViewBot : TelegramLongPollingBot(DEFAULT_OPTION) {
     override fun getBotToken(): String = Config.BOT_TOKEN
 
     override fun onUpdateReceived(update: Update) {
+<<<<<<< HEAD
         val message = update.message ?: return
+=======
+        if (update.hasCallbackQuery()) {
+            handleCallback(update.callbackQuery)
+        } else if (update.hasMessage()) {
+            handleUpdateMessage(update.message)
+        }
+    }
+
+    private val workerPool = Executors.newCachedThreadPool()
+
+    private fun handleCallback(callbackQuery: CallbackQuery) {
+        println(callbackQuery)
+        val message = callbackQuery.message
+//        execute(ForwardMessage()
+//                .setFromChatId(message.chatId)
+//                .setMessageId(message.messageId))
+        execute(AnswerCallbackQuery()
+                .setCallbackQueryId(callbackQuery.id))
+    }
+
+    private fun handleUpdateMessage(message: Message) {
+>>>>>>> use thread pool to handle requests
         if (message.isCommand) {
             if (message.text == Commands.START) {
                 execute(SendMessage().setChatId(message.chatId)
@@ -61,6 +119,7 @@ class JikeViewBot : TelegramLongPollingBot(DEFAULT_OPTION) {
                 return
             }
             urls.forEach { url ->
+<<<<<<< HEAD
                 val progress = execute(SendMessage().setChatId(message.chatId)
                         .setText(Dialogues.PROGRESS_HANDLING_URL(url)))
                 val post = JikeClient.instance.getPostByUrl(url)
@@ -81,10 +140,18 @@ class JikeViewBot : TelegramLongPollingBot(DEFAULT_OPTION) {
                             .setText(Dialogues.CANNOT_HANDEL_URL(url))
                 }
                 execute(editMessageText)
+=======
+                workerPool.execute(SendPostTask(
+                        url = url,
+                        chatId = message.chatId,
+                        bot = this,
+                        requestMessageId = message.messageId))
+>>>>>>> use thread pool to handle requests
             }
         }
     }
 
+<<<<<<< HEAD
     @Throws(UnsupportedOperationException::class)
     private fun sendPost(message: Message, post: Post) {
         val data = post.postData
@@ -159,4 +226,6 @@ class JikeViewBot : TelegramLongPollingBot(DEFAULT_OPTION) {
         return content
     }
 
+=======
+>>>>>>> use thread pool to handle requests
 }
