@@ -1,0 +1,29 @@
+{
+  "name": "jikeview-bot",
+  "version": "1.0.0",
+  "description": "A Telegram bot that can fetch Jike post for you.",
+  "author": "sorcererxw",
+  "license": "GPL-3.0-or-later",
+  "dependencies": {
+    "node-fetch": "^2.5.0",
+    "socks-proxy-agent": "^4.0.2",
+    "telegraf": "^3.29.0"
+  },
+  "devDependencies": {
+    "jest": "^24.8.0",
+    "nodemon": "^1.13.0",
+    "ts-jest": "^24.0.2",
+    "ts-node": "^8.1.0",
+    "tslint": "^5.16.0",
+    "tslint-config-airbnb": "^5.11.1",
+    "typescript": "^3.4.5"
+  },
+  "scripts": {
+    "tslint": "tslint -c tslint.json -p tsconfig.json",
+    "build-ts": "tsc",
+    "build": "yarn run build-ts",
+    "debug": "yarn run build && yarn run watch-debug",
+    "start": "yarn run build && node dist/app.js",
+    "watch-debug": "concurrently -k -p \"[{name}]\" -n \"TypeScript,Node\" -c \"yellow.bold,cyan.bold,green.bold\" \"yarn run watch-ts\" \"yarn run serve-debug\""
+  }
+}
