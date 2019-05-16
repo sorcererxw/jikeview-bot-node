@@ -1,56 +1,68 @@
-import JikeUrlParser, {JikeUrl} from './jike/JikeUrlParser'
-import JikeApi from './jike/JikeApi'
-import Telegraf, {TelegrafOptions} from "telegraf";
+import JikeUrlParser, { JikeUrl } from './jike/jike-url-parser'
+import JikeApi from './jike/jike-api'
+import TelegramBot, { InputMediaPhoto, Message, Metadata } from 'node-telegram-bot-api'
+import { i18n } from './i18n'
+import { log } from './utils/logger'
 
-const SocksProxyAgent = require('socks-proxy-agent');
+const token = process.env.BOT_TOKEN
 
-const token = '873110248:AAElie6zGMeXkWTy3IFASw1pzppJVfdkThI';
+if (token === undefined || token.length === 0) {
+    log('Please provide BOT_TOKEN in env')
+    process.exit(1)
+}
 
-// SOCKS proxy to connect to
-const proxy = process.env.socks_proxy || 'socks://127.0.0.1:6153';
-console.log('using proxy server %j', proxy);
-const options: TelegrafOptions = {
-    telegram: {
-        agent: new SocksProxyAgent(proxy)
-    },
-    username: 'jikeview_debug_bot',
-};
-const bot = new Telegraf(token, options);
+const bot = new TelegramBot(token, {
+    polling: true,
+})
 
-bot.start((ctx) => ctx.reply('welcome'));
+bot.onText(/\/start/, async (msg: Message, _: RegExpExecArray | null) => {
+    const chatId = msg.chat.id
+    await bot.sendMessage(chatId, i18n(msg.from.language_code).welcome())
+})
 
-bot.on('message', async ctx => {
-    console.log(ctx.message);
-    if (ctx.message.text === undefined) return;
-    const urls: RegExpMatchArray | null = ctx.message.text.match(/\bhttps?:\/\/\S+/gi);
-    if (urls == null || urls.length === 0) {
-        await ctx.reply("not found url");
+// bot.onText()
+
+bot.on('message', async (msg: Message, _: Metadata) => {
+    const reply = async (text: string) => {
+        await bot.sendMessage(msg.chat.id, text)
+    }
+    log(msg)
+    if (msg.text === undefined) {
         return
     }
-    const jikeUrls: JikeUrl[] = urls.map((it: string): JikeUrl | null => JikeUrlParser.parser(it))
-        .filter((it: JikeUrl | null): boolean => it != null)
-        .reduce((arr: JikeUrl[], v: JikeUrl): JikeUrl[] => arr.concat(v), []);
+    const jikeUrls: JikeUrl[] = (msg.text.match(/\bhttps?:\/\/\S+/gi) || [])
+        .map((it: string): JikeUrl | null => JikeUrlParser.parser(it))
+        .filter((it: JikeUrl | null): boolean => it !== null)
+        .reduce((arr: JikeUrl[], v: JikeUrl): JikeUrl[] => arr.concat(v), [])
     if (jikeUrls.length === 0) {
-        await ctx.reply("not found url");
+        await reply('not found url')
         return
     }
-    await ctx.reply("found follow urls" + jikeUrls.map(it => "\n" + JikeUrlParser.generateMessageUrl(it)).join(""));
     jikeUrls.forEach(async it => {
-        const resultMessage = await ctx.reply("handle " + JikeUrlParser.generateMessageUrl(it));
-        const post = await JikeApi.getPostByUrl(it);
+        // const resultMessage = await reply('handle ' + JikeUrlParser.generateMessageUrl(it))
+        const post = await JikeApi.getPostByUrl(it)
         if (post === null) {
-            await ctx.reply("fail");
+            await reply('fail')
             return
         }
+
         if (post.data.pictures !== undefined && post.data.pictures.length > 0) {
-            await ctx.replyWithPhoto(post.data.pictures[0].picUrl, {caption: post.data.content})
+            await bot.sendMediaGroup(
+                msg.chat.id,
+                post.data.pictures.map((it, index) => {
+                    return {
+                        type: 'photo',
+                        media: it.picUrl,
+                        caption: index === 0
+                            ? post.data.content
+                            : undefined,
+                    } as InputMediaPhoto
+                }),
+            )
         } else if (post.data.video !== undefined) {
             // await ctx.replyWithVideo(post.data.pictures[0].picUrl, {caption: post.data.content})
         } else {
-            await ctx.reply(post.data.content)
+            await reply(post.data.content)
         }
     })
-});
-
-// noinspection JSIgnoredPromiseFromCall
-bot.launch();
+})
