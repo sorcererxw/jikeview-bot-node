@@ -5,6 +5,7 @@ import { i18n } from './i18n'
 import { log } from './utils/logger'
 import M3u8ToMp4Converter from './utils/m3u8-to-mp4-converter'
 import * as fs from 'fs'
+import { noSpace, trim } from './utils/string-utils'
 
 const m3u8ToMp4Converter = new M3u8ToMp4Converter()
 
@@ -31,8 +32,12 @@ bot.onText(/^\/help(\s.*)?$/, async msg => {
     await bot.sendMessage(chatId, i18n(msg.from.language_code).help())
 })
 
+bot.onText(/^\/report(\s.*)?$/, async msg => {
+    const chatId = msg.chat.id
+    await bot.sendMessage(chatId, i18n(msg.from.language_code).report())
+})
+
 bot.onText(/^(?!\/).*$/, async msg => {
-    log(msg)
     const msgText = msg.text
     const chatId = msg.chat.id
     const languageCode = msg.from.language_code
@@ -64,14 +69,21 @@ bot.onText(/^(?!\/).*$/, async msg => {
 
         log(post)
 
-        const content = `
-        #${post.data.topic.content.split(' ').join('')}
+        const content = trim`
+        #${noSpace`${post.data.topic.content}`}
         ${post.data.content}
 
         [${dialogue.originalLink()}](${JikeUrlParser.generateMessageUrl(jikeUrl)})
-        `.split('\n').map(it => it.trim()).join('\n')
+        `
 
-        const video = post.data.video || post.data.linkInfo.video
+        const video = (post => {
+            if (post.data.video) {
+                return post.data.video
+            }
+            if (post.data.linkInfo) {
+                return post.data.linkInfo.video
+            }
+        })(post)
 
         if (post.data.pictures !== undefined && post.data.pictures.length > 0) {
             await bot.sendMediaGroup(
@@ -110,6 +122,10 @@ bot.onText(/^(?!\/).*$/, async msg => {
             await reply(content)
         }
     })
+})
+
+bot.on('message', async msg => {
+    log(msg)
 })
 
 log('bot is ready')

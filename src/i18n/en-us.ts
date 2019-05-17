@@ -18,4 +18,12 @@ export class EnUs implements I18n {
     notFoundJikeUrl(): string {
         return ''
     }
+
+    report(): string {
+        return ''
+    }
+
+    share(): string {
+        return ''
+    }
 }

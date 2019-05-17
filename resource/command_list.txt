@@ -1,2 +1,3 @@
-start - 开始使用
-report - 报告问题
+start - Welcome
+help - Usage Guide
+report - Report issues

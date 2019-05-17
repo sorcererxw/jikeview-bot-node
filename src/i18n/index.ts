@@ -11,6 +11,10 @@ export interface I18n {
     fail(): string
 
     notFoundJikeUrl(): string
+
+    report(): string
+
+    share(): string
 }
 
 const zhHans = new ZhHans()
