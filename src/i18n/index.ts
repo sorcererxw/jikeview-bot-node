@@ -10,7 +10,7 @@ export interface I18n {
 
     fail(): string
 
-    jikeUrlNotFound(): string
+    notFoundJikeUrl(): string
 }
 
 const zhHans = new ZhHans()

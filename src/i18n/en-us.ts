@@ -15,7 +15,7 @@ export class EnUs implements I18n {
 
     fail = (): string => 'fail'
 
-    jikeUrlNotFound(): string {
+    notFoundJikeUrl(): string {
         return ''
     }
 }

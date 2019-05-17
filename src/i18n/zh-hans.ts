@@ -14,7 +14,7 @@ export class ZhHans implements I18n {
 
     fail = (): string => '抓取失败🌚'
 
-    jikeUrlNotFound(): string {
+    notFoundJikeUrl(): string {
         return '未找到即刻消息链接😕'
     }
 }

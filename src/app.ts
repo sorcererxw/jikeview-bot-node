@@ -51,7 +51,7 @@ bot.onText(/^(?!\/).*$/, async msg => {
         .filter((it: JikeUrl | null) => it !== null)
         .reduce((arr: JikeUrl[], v: JikeUrl): JikeUrl[] => arr.concat(v), [])
     if (jikeUrls.length === 0) {
-        await reply('not found url')
+        await reply(dialogue.notFoundJikeUrl())
         return
     }
     jikeUrls.forEach(async jikeUrl => {
@@ -100,7 +100,11 @@ bot.onText(/^(?!\/).*$/, async msg => {
             await bot.sendVideo(
                 chatId,
                 fs.createReadStream(fileName),
-                { caption: content },
+                {
+                    caption: content,
+                    // @ts-ignore
+                    parse_mode: 'Markdown',
+                },
             )
         } else {
             await reply(content)
