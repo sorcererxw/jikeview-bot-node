@@ -12,4 +12,10 @@ export class EnUs implements I18n {
     welcome(): string {
         return 'welcome'
     }
+
+    fail = (): string => 'fail'
+
+    jikeUrlNotFound(): string {
+        return ''
+    }
 }

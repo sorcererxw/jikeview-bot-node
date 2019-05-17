@@ -7,6 +7,10 @@ export interface I18n {
     help(): string,
 
     originalLink(): string
+
+    fail(): string
+
+    jikeUrlNotFound(): string
 }
 
 const zhHans = new ZhHans()

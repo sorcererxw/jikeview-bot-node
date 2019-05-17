@@ -5,12 +5,14 @@
   "author": "sorcererxw",
   "license": "GPL-3.0-or-later",
   "dependencies": {
+    "fluent-ffmpeg": "^2.1.2",
     "node-fetch": "^2.5.0",
     "node-telegram-bot-api": "^0.30.0",
     "socks-proxy-agent": "^4.0.2",
     "socks5-https-client": "^1.2.1"
   },
   "devDependencies": {
+    "@types/fluent-ffmpeg": "^2.1.9",
     "@types/node-fetch": "^2.3.3",
     "@types/node-telegram-bot-api": "^0.31.0",
     "jest": "^24.8.0",
@@ -25,7 +27,7 @@
   "scripts": {
     "tslint": "tslint -c tslint.json -p tsconfig.json",
     "build-ts": "tsc",
-    "build": "yarn run build-ts",
+    "build": "yarn run tslint && yarn run build-ts",
     "debug": "yarn run build && yarn run watch-debug",
     "start": "yarn run build && node dist/app.js",
     "watch-debug": "concurrently -k -p \"[{name}]\" -n \"TypeScript,Node\" -c \"yellow.bold,cyan.bold,green.bold\" \"yarn run watch-ts\" \"yarn run serve-debug\""

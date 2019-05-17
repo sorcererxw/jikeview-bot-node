@@ -4,7 +4,7 @@ import fetch from 'node-fetch'
 
 const BASE_URL = 'https://app.jike.ruguoapp.com/1.0'
 
-function get<T>(url: string): Promise<T> {
+async function get<T>(url: string): Promise<T> {
     return fetch(`${BASE_URL}${url}`,
         {
             headers: { 'content-type': 'application/json;charset=UTF-8' },
