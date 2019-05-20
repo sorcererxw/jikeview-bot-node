@@ -1,9 +1,16 @@
 /* tslint:disable:max-line-length */
 import { I18n } from './index'
-import { trim } from '../utils/string-utils'
+import { TemplateHandlers } from '../utils/string-utils'
+
+const { trim } = TemplateHandlers
 
 export class ZhHans implements I18n {
-    help = (): string => '使用帮助: TODO'
+    help = (): string => trim`使用帮助:
+        可以直接通过 * 即刻 APP* 分享消息或者复制消息链接给我，我会将消息转成 Telegram 消息发送给您
+
+        /help 使用帮助
+        /report 报告问题
+        `
 
     originalLink = (): string => '原始链接'
 

@@ -13,11 +13,11 @@ async function get<T>(url: string): Promise<T> {
     ).then((res: any) => res.json() as T)
 }
 
-async function getOriginalPosts(id: string): Promise<Post> {
+async function getOriginalPosts(id: string): Promise<JikePost> {
     return get(`/originalPosts/get?id=${id}`)
 }
 
-async function getOfficialMessages(id: string): Promise<Post> {
+async function getOfficialMessages(id: string): Promise<JikePost> {
     return get(`/officialMessages/get?id=${id}`)
 }
 
@@ -26,7 +26,7 @@ async function getMediaMeta(id: string, type: string): Promise<MediaMeta> {
 }
 
 export default {
-    async getPostByUrl(url: JikeUrl): Promise<Post | null> {
+    async getPostByUrl(url: JikeUrl): Promise<JikePost | null> {
         console.log(url)
         if (url.type === JikeUrlType.OFFICIAL_MESSAGE) {
             return getOfficialMessages(url.id)

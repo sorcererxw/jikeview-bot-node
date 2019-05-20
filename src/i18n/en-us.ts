@@ -1,8 +1,16 @@
 import { I18n } from './index'
+import { TemplateHandlers } from '../utils/string-utils'
+
+const { trim } = TemplateHandlers
 
 export class EnUs implements I18n {
     help(): string {
-        return 'help'
+        return trim`
+        Just share Jike post link to me, and I'll reply the Telegramify content to you.
+
+        /help show usage guide
+        /report report problem
+        `
     }
 
     originalLink(): string {
@@ -16,14 +24,14 @@ export class EnUs implements I18n {
     fail = (): string => 'fail'
 
     notFoundJikeUrl(): string {
-        return ''
+        return 'Not found Jike post url'
     }
 
-    report(): string {
-        return ''
-    }
+    report = (): string =>
+        trim`Any problem?
+         Create issues on [Github issues](https://github.com/sorcererxw/jikeview-bot/issues)`
 
     share(): string {
-        return ''
+        return 'Share'
     }
 }

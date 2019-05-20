@@ -1,4 +1,4 @@
-interface Post {
+interface JikePost {
     data: PostData
 }
 

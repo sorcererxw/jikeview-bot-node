@@ -5,14 +5,17 @@
   "author": "sorcererxw",
   "license": "GPL-3.0-or-later",
   "dependencies": {
+    "ffmpeg-static": "^2.4.0",
     "fluent-ffmpeg": "^2.1.2",
+    "lodash": "^4.17.11",
+    "moment": "^2.24.0",
     "node-fetch": "^2.5.0",
-    "node-telegram-bot-api": "^0.30.0",
-    "socks-proxy-agent": "^4.0.2",
-    "socks5-https-client": "^1.2.1"
+    "node-telegram-bot-api": "^0.30.0"
   },
   "devDependencies": {
+    "@types/ffmpeg-static": "^2.0.0",
     "@types/fluent-ffmpeg": "^2.1.9",
+    "@types/lodash": "^4.14.129",
     "@types/node-fetch": "^2.3.3",
     "@types/node-telegram-bot-api": "^0.31.0",
     "jest": "^24.8.0",
@@ -27,9 +30,10 @@
   "scripts": {
     "tslint": "tslint -c tslint.json -p tsconfig.json",
     "build-ts": "tsc",
-    "build": "yarn run tslint && yarn run build-ts",
+    "build": "(rm -r dist || true) && yarn run tslint && yarn run build-ts",
     "debug": "yarn run build && yarn run watch-debug",
-    "start": "yarn run build && node dist/app.js",
+    "test": "yarn run build && node dist/test",
+    "start": "yarn run build && node dist/src/app.js",
     "watch-debug": "concurrently -k -p \"[{name}]\" -n \"TypeScript,Node\" -c \"yellow.bold,cyan.bold,green.bold\" \"yarn run watch-ts\" \"yarn run serve-debug\""
   }
 }
