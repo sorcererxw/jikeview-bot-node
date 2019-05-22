@@ -1,27 +1,19 @@
 import JikeUrlParser, { JikeUrl } from './jike/jike-url-parser'
 import JikeApi from './jike/jike-api'
-import TelegramBot, { InputMediaPhoto, InputMediaVideo, ParseMode } from 'node-telegram-bot-api'
 import { I18n, i18n } from './i18n'
 import { log } from './utils/logger'
 import { removePunctuation, removeSpace, trimEachLine } from './utils/string-utils'
 import ffmpeg from 'fluent-ffmpeg'
 import { path as ffmpegPath } from 'ffmpeg-static'
 import * as fs from 'fs'
+import { createBot, sendTgPost, TgPost, TgPostGif, TgPostPhoto, TgPostVideo } from './telegram'
 
 const STORAGE_CHAT = process.env.STORAGE_CHAT
 
-const bot = (() => {
-    const token = process.env.BOT_TOKEN
-
-    if (token === undefined || token.length === 0) {
-        log('Please provide BOT_TOKEN in env')
-        process.exit(1)
-    }
-
-    return new TelegramBot(token, {
-        polling: true,
-    })
-})()
+const bot = createBot()
+if (bot === null) {
+    process.exit(1)
+}
 
 bot.onText(/^\/start(\s.*)?$/, async msg => {
     const chatId = msg.chat.id
@@ -70,7 +62,7 @@ bot.onText(/^(?!\/)(.|\n)*$/, async msg => {
             await reply('fail')
             return
         }
-        await sendTgPost(chatId, tgPost)
+        await sendTgPost(bot, chatId, tgPost)
     })
 })
 
@@ -160,100 +152,5 @@ async function jikePostToTgPost(jikeUrl: JikeUrl, dialogue: I18n): Promise<TgPos
 bot.on('message', async msg => {
     log(msg)
 })
-
-type FileId = string
-type Url = string
-
-interface TgPostVideo {
-    type: 'video'
-    file: FileId | Url,
-    thumbUrl?: string
-}
-
-interface TgPostPhoto {
-    type: 'photo'
-    file: FileId | Url,
-}
-
-interface TgPostGif {
-    type: 'gif'
-    file: FileId | Url,
-}
-
-interface TgPost {
-    text: {
-        content: string,
-        mode?: ParseMode
-    }
-    media?: (TgPostVideo | TgPostGif | TgPostPhoto)[]
-}
-
-async function sendTgPost(chatId: number, post: TgPost) {
-    console.log(post)
-
-    const { text, media } = post
-
-    if (media === undefined || media.length === 0) {
-        await bot.sendMessage(chatId, text.content, {
-            parse_mode: text.mode,
-        })
-        return
-    }
-    if (media.length === 1 && media[0].type === 'photo') {
-        await bot.sendPhoto(chatId, media[0].file, {
-            caption: text.content,
-            // @ts-ignore
-            parse_mode: text.mode,
-        })
-        return
-    }
-    if (media.length === 1 && media[0].type === 'video') {
-        await bot.sendVideo(chatId, media[0].file, {
-            caption: text.content,
-            // @ts-ignore
-            parse_mode: text.mode,
-        })
-        return
-    }
-    if (media.length === 1 && media[0].type === 'gif') {
-        await bot.sendPhoto(chatId, media[0].file, {
-            caption: text.content,
-            // @ts-ignore
-            parse_mode: text.mode,
-        })
-        return
-    }
-    if (media.filter(it => it.type === 'gif').length === media.length) {
-        await bot.sendPhoto(chatId, media[0].file, {
-            caption: text.content,
-            // @ts-ignore
-            parse_mode: text.mode,
-        })
-        return
-    }
-    await bot.sendMediaGroup(
-        chatId,
-        media.filter(it => it.type !== 'gif')
-            .map((value, idx) => {
-                if (value.type === 'photo') {
-                    return {
-                        type: 'photo',
-                        parse_mode: text.mode,
-                        caption: idx === 0 ? text.content : undefined,
-                        media: value.file,
-                    } as InputMediaPhoto
-                }
-                if (value.type === 'video') {
-                    return {
-                        type: 'video',
-                        parse_mode: text.mode,
-                        caption: idx === 0 ? text.content : undefined,
-                        media: value.file,
-                    } as InputMediaVideo
-                }
-            })
-            .filter(it => it !== undefined),
-    )
-}
 
 log('bot is ready')

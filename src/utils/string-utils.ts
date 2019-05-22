@@ -39,12 +39,12 @@ export const merge = (...handlers: TemplateHandler[]): TemplateHandler =>
     }
 
 export const TemplateHandlers = {
-    trim: ((strings, args) =>
+    trim: ((strings, ...args) =>
         trimEachLine(origin(strings, ...args))) as TemplateHandler,
-    noSpace: ((strings, args) =>
+    noSpace: ((strings, ...args) =>
         removeSpace(origin(strings, ...args))) as TemplateHandler,
-    noBreakLine: ((strings, args) =>
+    noBreakLine: ((strings, ...args) =>
         removeBreakLine(origin(strings, ...args))) as TemplateHandler,
-    noPunctuation: ((strings, args) =>
+    noPunctuation: ((strings, ...args) =>
         removePunctuation(origin(strings, ...args))) as TemplateHandler,
 }

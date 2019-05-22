@@ -280,3 +280,10 @@ typings/
 
 # DynamoDB Local files
 .dynamodb/
+
+### AppEngine template
+# Google App Engine generated folder
+appengine-generated/
+
+app.yaml
+.gcloudignore
