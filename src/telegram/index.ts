@@ -12,6 +12,7 @@ export function createBot(): TelegramBot | null {
 
         return new TelegramBot(token, {
             polling: true,
+            webHook: false,
         })
     })()
 }
