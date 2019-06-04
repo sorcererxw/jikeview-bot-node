@@ -1,4 +1,8 @@
-<p align="center">
+<p align="left>
+    <h1>JikeView Bot</h1>
+    <p>A Telegram bot that can fetch Jike post for you.</p>
+</p>
+<p align="right">
     <img src="https://github.com/sorcererxw/jikeview-bot/blob/master/resource/icon.png" width="200" />
 </p>
 
