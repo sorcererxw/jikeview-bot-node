@@ -1,8 +1,9 @@
+
+<img align="right" src="https://github.com/sorcererxw/jikeview-bot/blob/master/resource/icon.png" width="100" />
+
 # Jikeview Bot
 
 A Telegram bot that can fetch Jike post for you.
-
-<img align="right" src="https://github.com/sorcererxw/jikeview-bot/blob/master/resource/icon.png" width="100" />
 
 ## Usage
 
