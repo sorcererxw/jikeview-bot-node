@@ -285,7 +285,9 @@ typings/
 # Google App Engine generated folder
 appengine-generated/
 
-app.yaml
-.gcloudignore
-
 dist
+
+config/production.json
+config/dev.json
+config/production.js
+config/default.js

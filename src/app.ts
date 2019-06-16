@@ -7,8 +7,9 @@ import ffmpeg from 'fluent-ffmpeg'
 import { path as ffmpegPath } from 'ffmpeg-static'
 import * as fs from 'fs'
 import { createBot, sendTgPost, TgPost, TgPostGif, TgPostPhoto, TgPostVideo } from './telegram'
+import config from 'config'
 
-const STORAGE_CHAT = process.env.STORAGE_CHAT
+const STORAGE_CHAT = config.get<string>('storage_chat')
 
 const bot = createBot()
 if (bot === null) {

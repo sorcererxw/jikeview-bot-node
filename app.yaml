@@ -1,0 +1,11 @@
+runtime: nodejs
+
+env: flex
+
+env_variables:
+  NODE_ENV: production
+
+handlers:
+  - url: /.*
+    redirect_http_response_code: 301
+    script: auto

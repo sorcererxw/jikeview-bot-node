@@ -1,16 +1,18 @@
 import TelegramBot, { InputMediaPhoto, InputMediaVideo, ParseMode } from 'node-telegram-bot-api'
 import { log } from '../utils/logger'
+import config from 'config'
+
+const BOT_TOKEN = config.get<string>('bot_token')
+console.log(`BOT_TOKEN: ${BOT_TOKEN}`)
 
 export function createBot(): TelegramBot | null {
     return (() => {
-        const token = process.env.BOT_TOKEN
-
-        if (token === undefined || token.length === 0) {
-            log('Please provide BOT_TOKEN in env')
+        if (!BOT_TOKEN) {
+            log('Please provide BOT_TOKEN in config')
             return null
         }
 
-        return new TelegramBot(token, {
+        return new TelegramBot(BOT_TOKEN, {
             polling: true,
             webHook: false,
         })
