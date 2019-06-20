@@ -290,4 +290,4 @@ dist
 config/production.json
 config/dev.json
 config/production.js
-config/default.js
+config/dev.js

@@ -134,10 +134,18 @@ async function jikePostToTgPost(jikeUrl: JikeUrl, dialogue: I18n): Promise<TgPos
         })
         const storageMsg = await bot.sendVideo(STORAGE_CHAT, fs.createReadStream(fileName))
         fs.unlinkSync(fileName)
+
+        let thumb: string | undefined
+        if (video.thumbnailUrl) {
+            thumb = video.thumbnailUrl
+        } else if (video.image && video.image.picUrl) {
+            thumb = video.image.picUrl
+        }
+
         mediaArr.push({
             type: 'video',
             file: storageMsg.video.file_id,
-            thumbUrl: video.thumbnailUrl,
+            thumbUrl: thumb,
         } as TgPostVideo)
     }
 

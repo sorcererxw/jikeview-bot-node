@@ -53,6 +53,7 @@ interface Video {
     duration?: number,
     source?: any[],
     thumbnailUrl?: string,
+    image?: Picture
     type?: string
 }
 

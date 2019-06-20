@@ -1,11 +1,12 @@
-import TelegramBot, { InputMediaPhoto, InputMediaVideo, ParseMode } from 'node-telegram-bot-api'
+import TelegramBot, { InputMediaPhoto, InputMediaVideo } from 'node-telegram-bot-api'
 import { log } from '../utils/logger'
 import config from 'config'
+import { TgPost, TgPostVideo } from './types'
 
 const BOT_TOKEN = config.get<string>('bot_token')
 console.log(`BOT_TOKEN: ${BOT_TOKEN}`)
 
-export function createBot(): TelegramBot | null {
+function createBot(): TelegramBot | null {
     return (() => {
         if (!BOT_TOKEN) {
             log('Please provide BOT_TOKEN in config')
@@ -19,34 +20,7 @@ export function createBot(): TelegramBot | null {
     })()
 }
 
-type FileId = string
-type Url = string
-
-export interface TgPostVideo {
-    type: 'video'
-    file: FileId | Url,
-    thumbUrl?: string
-}
-
-export interface TgPostPhoto {
-    type: 'photo'
-    file: FileId | Url,
-}
-
-export interface TgPostGif {
-    type: 'gif'
-    file: FileId | Url,
-}
-
-export interface TgPost {
-    text: {
-        content: string,
-        mode?: ParseMode
-    }
-    media?: (TgPostVideo | TgPostGif | TgPostPhoto)[]
-}
-
-export async function sendTgPost(bot: TelegramBot, chatId: number, post: TgPost) {
+async function sendTgPost(bot: TelegramBot, chatId: number, post: TgPost) {
     console.log(post)
 
     const { text, media } = post
@@ -66,10 +40,28 @@ export async function sendTgPost(bot: TelegramBot, chatId: number, post: TgPost)
         return
     }
     if (media.length === 1 && media[0].type === 'video') {
+        const video = media[0] as TgPostVideo
+
+        let width: number | undefined
+        let height: number | undefined
+
+        if (video.thumbUrl) {
+            const probe = require('probe-image-size')
+            const result = await probe(video.thumbUrl)
+            width = result.width
+            height = result.height
+        }
+        console.log(`
+        width: ${width}
+        height: ${height}
+        `)
         await bot.sendVideo(chatId, media[0].file, {
+            width,
+            height,
             caption: text.content,
             // @ts-ignore
             parse_mode: text.mode,
+            thumb: video.thumbUrl,
         })
         return
     }
@@ -112,4 +104,11 @@ export async function sendTgPost(bot: TelegramBot, chatId: number, post: TgPost)
             })
             .filter(it => it !== undefined),
     )
+}
+
+export * from './types'
+
+export {
+    createBot,
+    sendTgPost,
 }
