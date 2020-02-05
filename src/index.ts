@@ -16,3 +16,9 @@ function launchBot(): Promise<void> {
 }
 
 launchBot()
+  .then(() => {
+    console.log('bot started')
+  })
+  .catch((e) => {
+    console.error(e)
+  })

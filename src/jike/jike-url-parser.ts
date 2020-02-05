@@ -21,25 +21,25 @@ export function parser(url: string): JikeUrl | null {
   if (WEB_ORIGINAL_POST.test(url)) {
     return {
       type: JikeUrlType.ORIGINAL_POST,
-      id: WEB_ORIGINAL_POST.exec(url)[2],
+      id: WEB_ORIGINAL_POST.exec(url)[3],
     }
   }
   if (WEB_OFFICIAL_MESSAGE.test(url)) {
     return {
       type: JikeUrlType.OFFICIAL_MESSAGE,
-      id: WEB_OFFICIAL_MESSAGE.exec(url)[2],
+      id: WEB_OFFICIAL_MESSAGE.exec(url)[3],
     }
   }
   if (MOBILE_ORIGINAL_POST.test(url)) {
     return {
       type: JikeUrlType.ORIGINAL_POST,
-      id: MOBILE_ORIGINAL_POST.exec(url)[2],
+      id: MOBILE_ORIGINAL_POST.exec(url)[3],
     }
   }
   if (MOBILE_OFFICIAL_MESSAGE.test(url)) {
     return {
       type: JikeUrlType.OFFICIAL_MESSAGE,
-      id: MOBILE_OFFICIAL_MESSAGE.exec(url)[2],
+      id: MOBILE_OFFICIAL_MESSAGE.exec(url)[3],
     }
   }
   return null
