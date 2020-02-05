@@ -2,28 +2,26 @@ import { ZhHans } from './zh-hans'
 import { EnUs } from './en-us'
 
 export interface I18n {
-    welcome(): string,
+  welcome(): string,
 
-    help(): string,
+  help(): string,
 
-    originalLink(): string
+  originalLink(): string
 
-    fail(): string
+  fail(): string
 
-    notFoundJikeUrl(): string
+  notFoundJikeUrl(): string
 
-    report(): string
-
-    share(): string
+  share(): string
 }
 
 const zhHans = new ZhHans()
 const enUs = new EnUs()
 
 export function i18n(languageCode: String): I18n {
-    const [lang] = languageCode.split('-')
-    if (lang === 'zh') {
-        return zhHans
-    }
-    return enUs
+  const [lang] = languageCode.split('-')
+  if (lang === 'zh') {
+    return zhHans
+  }
+  return enUs
 }

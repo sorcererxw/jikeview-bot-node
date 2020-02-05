@@ -1,6 +1,6 @@
 module.exports = {
-    bot_token: `The bot token that provided by @BotFather`,
-    storage_chat: `
+  botToken: `The bot token that provided by @BotFather`,
+  storageChat: `
     This bot would send video file to a Telegram account to get the video file id.
     So, you need set this chat id in this field.
     How to get this chat id:

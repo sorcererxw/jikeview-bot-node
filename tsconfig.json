@@ -1,22 +1,27 @@
 {
+  "compileOnSave": true,
   "compilerOptions": {
-    "module": "commonjs",
-    "esModuleInterop": true,
-    "target": "es6",
-    "noImplicitAny": true,
-    "moduleResolution": "node",
-    "sourceMap": true,
     "outDir": "dist",
-    "baseUrl": ".",
-    "paths": {
-      "*": [
-        "node_modules/*",
-        "src/types/*"
-      ]
-    }
+    "rootDir": "./",
+    "module": "commonjs",
+    "sourceMap": true,
+    "declaration": false,
+    "target": "es2016",
+    "lib": [
+      "es6"
+    ],
+    "typeRoots": [
+      "node_modules/@types"
+    ],
+    "allowJs": true,
+    "incremental": true,
+    "strict": false,
+    "skipLibCheck": true,
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true
   },
-  "include": [
-    "src/**/*",
-    "test/**/*"
+  "exclude": [
+    "./node_modules",
+    "dist"
   ]
 }

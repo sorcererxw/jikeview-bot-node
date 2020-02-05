@@ -2,42 +2,33 @@
   "name": "jikeview-bot",
   "version": "1.0.0",
   "description": "A Telegram bot that can fetch Jike post for you.",
-  "author": "sorcererxw",
   "license": "GPL-3.0-or-later",
+  "author": "sorcererxw",
+  "scripts": {
+    "build": "tsc",
+    "cron:sendNotification": "node dist/src/crons/send-notification.js",
+    "dev": "nodemon",
+    "start": "NODE_ENV=production node dist/src/index.js"
+  },
   "dependencies": {
-    "config": "^3.1.0",
-    "ffmpeg-static": "^2.4.0",
+    "config": "^3.2.5",
+    "ffmpeg-static": "^4.0.1",
     "fluent-ffmpeg": "^2.1.2",
-    "lodash": "^4.17.11",
+    "got": "^10.4.0",
+    "lodash": "^4.17.15",
     "moment": "^2.24.0",
-    "node-fetch": "^2.6.0",
-    "node-telegram-bot-api": "^0.30.0",
-    "probe-image-size": "^4.0.0"
+    "probe-image-size": "^5.0.0",
+    "telegraf": "^3.36.0"
   },
   "devDependencies": {
-    "@types/config": "^0.0.34",
-    "@types/ffmpeg-static": "^2.0.0",
-    "@types/fluent-ffmpeg": "^2.1.9",
-    "@types/lodash": "^4.14.134",
-    "@types/node-fetch": "^2.3.7",
-    "@types/node-telegram-bot-api": "^0.31.0",
-    "jest": "^24.8.0",
-    "nodemon": "^1.19.1",
-    "ts-jest": "^24.0.2",
-    "ts-node": "^8.3.0",
-    "tslint": "^5.17.0",
-    "tslint-jike-node": "^0.0.17",
-    "typescript": "^3.5.2",
-    "yarn-upgrade-all": "^0.5.0"
-  },
-  "scripts": {
-    "tslint": "tslint -c tslint.json -p tsconfig.json",
-    "build-ts": "tsc",
-    "purge": "(rm -r dist || true) && (rm -r node_modules || true)",
-    "build": "yarn run tslint && yarn run build-ts",
-    "gcp-build": "yarn run build",
-    "test": "yarn run build && node dist/test",
-    "start": "node dist/src/app.js",
-    "dev": "export NODE_ENV=dev && yarn run build && yarn run start"
+    "@types/config": "^0.0.36",
+    "@types/ffmpeg-static": "^3.0.0",
+    "@types/fluent-ffmpeg": "^2.1.14",
+    "@types/lodash": "^4.14.149",
+    "jest": "^25.1.0",
+    "nodemon": "^2.0.2",
+    "ts-jest": "^25.2.0",
+    "ts-node": "^8.6.2",
+    "typescript": "^3.7.5"
   }
 }
