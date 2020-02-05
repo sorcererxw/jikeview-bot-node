@@ -10,11 +10,9 @@ import { TgPost, TgPostGif, TgPostPhoto, TgPostVideo } from './telegram'
 import { InputMediaPhoto, InputMediaVideo } from 'telegraf/typings/telegram-types'
 import { commands } from './commands'
 
-const STORAGE_CHAT = config.get<string>('storage_chat')
-
-const bot = new Telegraf(
-  config.get<string>('bot_token'),
-)
+const STORAGE_CHAT = config.get<string>('storageChat')
+const BOT_TOKEN = config.get<string>('botToken')
+const bot = new Telegraf(BOT_TOKEN)
 
 bot.command(commands.START.cmd, async ctx => {
   return ctx.reply(

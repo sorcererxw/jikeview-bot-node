@@ -6,7 +6,6 @@
   "author": "sorcererxw",
   "scripts": {
     "build": "tsc",
-    "cron:sendNotification": "node dist/src/crons/send-notification.js",
     "dev": "nodemon",
     "start": "NODE_ENV=production node dist/src/index.js"
   },
