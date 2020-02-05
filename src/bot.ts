@@ -14,6 +14,14 @@ const STORAGE_CHAT = config.get<string>('storageChat')
 const BOT_TOKEN = config.get<string>('botToken')
 const bot = new Telegraf(BOT_TOKEN)
 
+bot.use(async (ctx, next) => {
+  try {
+    await next()
+  } catch (e) {
+    await ctx.reply(`${e}`)
+  }
+})
+
 bot.command(commands.START.cmd, async ctx => {
   return ctx.reply(
     i18n(ctx.from.language_code).welcome(),
