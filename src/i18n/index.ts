@@ -19,6 +19,9 @@ const zhHans = new ZhHans()
 const enUs = new EnUs()
 
 export function i18n(languageCode: String): I18n {
+  if (!languageCode) {
+    return enUs
+  }
   const [lang] = languageCode.split('-')
   if (lang === 'zh') {
     return zhHans

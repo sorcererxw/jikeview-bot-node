@@ -9,6 +9,7 @@ import { getMediaMeta, getPostByUrl, JikeUrl, parser } from './jike'
 import { TgPost, TgPostGif, TgPostPhoto, TgPostVideo } from './telegram'
 import { InputMediaPhoto, InputMediaVideo } from 'telegraf/typings/telegram-types'
 import { commands } from './commands'
+import { downloadFile } from './utils/files'
 
 const STORAGE_CHAT = config.get<string>('storageChat')
 const BOT_TOKEN = config.get<string>('botToken')
@@ -38,11 +39,9 @@ bot.command(commands.HELP.cmd, async ctx => {
 })
 
 bot.hears(/.*/, async ctx => {
-  const msgText = ctx.message.text
-
   const dialogue = i18n(ctx.from.language_code)
 
-  const jikeUrls = (msgText.match(/\bhttps?:\/\/\S+/gi) || [])
+  const jikeUrls = (ctx.message.text.match(/\bhttps?:\/\/\S+/gi) || [])
     .map((it: string) => parser(it))
     .filter((it: JikeUrl | null) => it !== null)
     .reduce((arr: JikeUrl[], v: JikeUrl): JikeUrl[] => arr.concat(v), [])
@@ -58,7 +57,10 @@ bot.hears(/.*/, async ctx => {
     }
     console.log(post)
 
-    const { text, media } = post
+    const {
+      text,
+      media,
+    } = post
 
     if (media === undefined || media.length === 0) {
       await ctx.reply(text.content, {
@@ -68,7 +70,7 @@ bot.hears(/.*/, async ctx => {
     }
     if (media.length === 1 && media[0].type === 'photo') {
       await ctx.replyWithPhoto(
-        media[0].file,
+        media[0].videoFile,
         {
           caption: text.content,
           parse_mode: text.mode,
@@ -78,34 +80,23 @@ bot.hears(/.*/, async ctx => {
     }
     if (media.length === 1 && media[0].type === 'video') {
       const video = media[0] as TgPostVideo
+      console.log(video)
 
-      let width: number | undefined
-      let height: number | undefined
-
-      if (video.thumbUrl) {
-        const probe = require('probe-image-size')
-        const result = await probe(video.thumbUrl)
-        width = result.width
-        height = result.height
-      }
-      console.log(`
-        width: ${width}
-        height: ${height}
-        `)
       await ctx.replyWithVideo(
-        media[0].file,
+        { source: fs.createReadStream(video.videoFile) },
         {
-          width,
-          height,
+          width: video.width,
+          height: video.height,
           caption: text.content,
           parse_mode: text.mode,
-          thumb: video.thumbUrl,
+          thumb: { source: fs.createReadStream(video.thumbFile) },
         },
       )
+      fs.unlinkSync(video.videoFile)
       return
     }
     if (media.length === 1 && media[0].type === 'gif') {
-      await ctx.replyWithPhoto(media[0].file,
+      await ctx.replyWithPhoto(media[0].videoFile,
         {
           caption: text.content,
           parse_mode: text.mode,
@@ -115,7 +106,7 @@ bot.hears(/.*/, async ctx => {
     }
     if (media.filter(it => it.type === 'gif').length === media.length) {
       await ctx.replyWithPhoto(
-        media[0].file,
+        media[0].videoFile,
         {
           caption: text.content,
           parse_mode: text.mode,
@@ -131,7 +122,7 @@ bot.hears(/.*/, async ctx => {
               type: 'photo',
               parse_mode: text.mode,
               caption: idx === 0 ? text.content : undefined,
-              media: value.file,
+              media: value.videoFile,
             } as InputMediaPhoto
           }
           if (value.type === 'video') {
@@ -139,7 +130,7 @@ bot.hears(/.*/, async ctx => {
               type: 'video',
               parse_mode: text.mode,
               caption: idx === 0 ? text.content : undefined,
-              media: value.file,
+              media: value.videoFile,
             } as InputMediaVideo
           }
         })
@@ -150,14 +141,19 @@ bot.hears(/.*/, async ctx => {
 
 async function jikePostToTgPost(jikeUrl: JikeUrl): Promise<TgPost> {
   const post = await getPostByUrl(jikeUrl)
+  console.log(JSON.stringify(post, null, 2))
   if (post === null || post.data === undefined) {
     return null
   }
+
   const textContent = [
-    `#${removeSpace(removePunctuation(post.data.topic.content))}`,
+    ...(
+      post.data.topic?.content
+        ? [`#${removeSpace(removePunctuation(post.data.topic.content))}`]
+        : []
+    ),
     `${post.data.content}`,
   ].join('\n')
-
 
   const pictures = (post => {
     if (post.data.pictures !== undefined && post.data.pictures.length > 0) {
@@ -180,12 +176,12 @@ async function jikePostToTgPost(jikeUrl: JikeUrl): Promise<TgPost> {
       if (it.format === 'gif') {
         return {
           type: 'gif',
-          file: it.picUrl,
+          videoFile: it.picUrl,
         } as TgPostGif
       }
       return {
         type: 'photo',
-        file: it.picUrl,
+        videoFile: it.picUrl,
       } as TgPostPhoto
     }).forEach(it => mediaArr.push(it))
   }
@@ -195,16 +191,16 @@ async function jikePostToTgPost(jikeUrl: JikeUrl): Promise<TgPost> {
     if (mediaMeta === null) {
       return null
     }
-    const fileName = `${post.data.id}${Date.now()}${Math.random()}.mp4`
 
-    await new Promise((resolve, reject) => {
+    const videoFileName = await new Promise((resolve, reject) => {
+      const fileName = `video-${post.data.id}${Date.now()}${Math.random()}.mp4`
       ffmpeg(mediaMeta.url)
         .setFfmpegPath(pathToFfmpeg)
         .on('error', error => {
           reject(new Error(error))
         })
         .on('end', () => {
-          resolve()
+          resolve(fileName)
         })
         .outputOptions('-c copy')
         .outputOptions('-bsf:a aac_adtstoasc')
@@ -212,23 +208,32 @@ async function jikePostToTgPost(jikeUrl: JikeUrl): Promise<TgPost> {
         .run()
     })
 
-    const storageMsg = await bot.telegram.sendVideo(
-      STORAGE_CHAT,
-      { source: fs.createReadStream(fileName) },
-    )
-    fs.unlinkSync(fileName)
+    const [thumbFileName, width, height] = await new Promise(async (resolve, reject) => {
+      let thumbUrl: string | undefined
+      if (video.thumbnailUrl) {
+        thumbUrl = video.thumbnailUrl
+      } else if (video.image && video.image.picUrl) {
+        thumbUrl = video.image.picUrl
+      }
+      if (!thumbUrl) {
+        resolve([undefined, undefined, undefined])
+      }
 
-    let thumb: string | undefined
-    if (video.thumbnailUrl) {
-      thumb = video.thumbnailUrl
-    } else if (video.image && video.image.picUrl) {
-      thumb = video.image.picUrl
-    }
+      const fileName = await downloadFile(thumbUrl)
+
+      const probe = require('probe-image-size')
+      const result = await probe(fs.createReadStream(fileName))
+      const width = result.width
+      const height = result.height
+
+      resolve([fileName, width, height])
+    })
 
     mediaArr.push({
       type: 'video',
-      file: storageMsg.video.file_id,
-      thumbUrl: thumb,
+      videoFile: videoFileName,
+      thumbFile: thumbFileName,
+      width, height,
     } as TgPostVideo)
   }
 

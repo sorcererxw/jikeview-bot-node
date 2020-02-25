@@ -15,6 +15,7 @@ export interface PostData {
   topic?: PostTopic,
   linkUrl?: string,
   video?: Video,
+  audio?: Audio,
   linkInfo?: LinkInfo
 }
 
@@ -55,6 +56,17 @@ export interface Video {
   thumbnailUrl?: string,
   image?: Picture
   type?: string
+}
+
+export interface Audio {
+  id: string,
+  type: 'AUDIO',
+  url: null,
+  author: string,
+  coverUrl: string,
+  originCoverUrl: string,
+  title: string,
+  duration: number
 }
 
 export interface MediaMeta {

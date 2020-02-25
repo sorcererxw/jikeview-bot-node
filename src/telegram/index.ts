@@ -5,18 +5,20 @@ type Url = string
 
 export interface TgPostVideo {
   type: 'video'
-  file: FileId | Url,
-  thumbUrl?: string
+  videoFile: string,
+  thumbFile?: string
+  width?: number,
+  height?: number
 }
 
 export interface TgPostPhoto {
   type: 'photo'
-  file: FileId | Url,
+  videoFile: FileId | Url,
 }
 
 export interface TgPostGif {
   type: 'gif'
-  file: FileId | Url,
+  videoFile: FileId | Url,
 }
 
 export interface TgPost {

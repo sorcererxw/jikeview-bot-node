@@ -1,4 +1,5 @@
 node_modules/
 dist
 .idea
-config/dev.json
+config/dev.js
+tmp
