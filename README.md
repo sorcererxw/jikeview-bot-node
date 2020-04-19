@@ -1,5 +1,10 @@
+# DEPRECATED
 
-<img align="right" src="https://github.com/sorcererxw/jikeview-bot/blob/master/resource/icon.png" width="200" />
+This project has been rewriten in golang, please check https://github.com/sorcererxw/jikeview-bot
+
+----
+
+<img align="right" src="https://github.com/sorcererxw/jikeview-bot-node/blob/master/resource/icon.png" width="200" />
 
 # Jikeview Bot
 
